@@ -22,7 +22,7 @@ abstract class BaseChartPainter extends CustomPainter {
   Rect mMainRect, mVolRect, mSecondaryRect;
   double mDisplayHeight, mWidth;
   double topPadding, bottomPadding, mChildPadding = 12.0;
-  final int mGridRows = 4, mGridColumns = 4;
+  final int gridRows, gridColumns;
   int mStartIndex = 0, mStopIndex = 0;
   double mMainMaxValue = double.minPositive, mMainMinValue = double.maxFinite;
   double mVolMaxValue = double.minPositive, mVolMinValue = double.maxFinite;
@@ -33,41 +33,51 @@ abstract class BaseChartPainter extends CustomPainter {
   double mMainHighMaxValue = double.minPositive,
       mMainLowMinValue = double.maxFinite;
   int mItemCount = 0;
-  double mDataLen = 0.0; //数据占屏幕总长度
-  double mPointWidth = ChartStyle.pointWidth;
-  List<String> mFormats = [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn]; //格式化时间
+  double mDataLen = 0.0;
+  List<String> mFormats = [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn];
+  final List<String> dateFormat;
+  final ChartStyle style;
 
-  BaseChartPainter(
-      {@required this.datas,
-      @required this.scaleX,
-      @required this.scrollX,
-      @required this.isLongPress,
-      @required this.selectX,
-      @required this.topPadding,
-      @required this.bottomPadding,
-      this.mainState,
-      this.volHidden,
-      this.secondaryState,
-      this.isLine}) {
+  BaseChartPainter({
+    @required this.datas,
+    @required this.scaleX,
+    @required this.scrollX,
+    @required this.isLongPress,
+    @required this.selectX,
+    @required this.topPadding,
+    @required this.bottomPadding,
+    @required this.style,
+    this.mainState,
+    this.volHidden,
+    this.secondaryState,
+    this.isLine,
+    this.dateFormat,
+    this.gridRows,
+    this.gridColumns,
+  })  : assert(gridRows != null && gridRows >= 0),
+        assert(gridColumns != null && gridColumns >= 0) {
     mItemCount = datas?.length ?? 0;
-    mDataLen = mItemCount * mPointWidth;
+    mDataLen = mItemCount * style.pointWidth;
     initFormats();
   }
 
   void initFormats() {
-//    [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn]
+    if (dateFormat != null) {
+      mFormats = dateFormat;
+      return;
+    }
+
     if (mItemCount < 2) return;
+
     int firstTime = datas.first?.time ?? 0;
     int secondTime = datas[1]?.time ?? 0;
     int time = secondTime - firstTime;
     time ~/= 1000;
-    //月线
+
     if (time >= 24 * 60 * 60 * 28)
       mFormats = [yy, '-', mm];
-    //日线等
     else if (time >= 24 * 60 * 60)
       mFormats = [yy, '-', mm, '-', dd];
-    //小时线等
     else
       mFormats = [mm, '-', dd, ' ', HH, ':', nn];
   }
@@ -272,7 +282,10 @@ abstract class BaseChartPainter extends CustomPainter {
   ///根据索引索取x坐标
   ///+ mPointWidth / 2防止第一根和最后一根k线显示不���
   ///@param position 索引值
-  double getX(int position) => position * mPointWidth + mPointWidth / 2;
+  double getX(int position) {
+    final pos = isLine ? position + 1 : position;
+    return pos * style.pointWidth + style.pointWidth / 2;
+  }
 
   Object getItem(int position) {
     if (datas != null) {
@@ -288,7 +301,7 @@ abstract class BaseChartPainter extends CustomPainter {
 
   ///获取平移的最小值
   double getMinTranslateX() {
-    var x = -mDataLen + mWidth / scaleX - mPointWidth / 2;
+    var x = -mDataLen + mWidth / scaleX - style.pointWidth / 2;
     return x >= 0 ? 0.0 : x;
   }
 

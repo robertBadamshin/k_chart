@@ -4,49 +4,57 @@ import '../k_chart_widget.dart' show MainState;
 import 'base_chart_renderer.dart';
 
 class MainRenderer extends BaseChartRenderer<CandleEntity> {
-  double mCandleWidth = ChartStyle.candleWidth;
-  double mCandleLineWidth = ChartStyle.candleLineWidth;
   MainState state;
   bool isLine;
-  //绘制的内容区域
   Rect _contentRect;
-  double _contentPadding = 5.0;
   List<int> maDayList;
   Color lineChartColor;
   Color lineChartFillColor;
+  final double contentPadding;
+  final String Function(double) priceFormatter;
+  final Color priceLabelBackgroundColor;
+  final ChartStyle style;
 
-  MainRenderer(
-      Rect mainRect,
-      double maxValue,
-      double minValue,
-      double topPadding,
-      this.state,
-      this.isLine,
-      int fixedLength,
-      this.lineChartColor,
-      this.lineChartFillColor,
-      [this.maDayList = const [5, 10, 20]])
-      : super(
-            chartRect: mainRect,
-            maxValue: maxValue,
-            minValue: minValue,
-            topPadding: topPadding,
-            fixedLength: fixedLength) {
+  MainRenderer({
+    @required Rect mainRect,
+    @required double maxValue,
+    @required double minValue,
+    @required double topPadding,
+    @required this.state,
+    @required this.isLine,
+    @required int fixedLength,
+    @required this.lineChartColor,
+    @required this.lineChartFillColor,
+    @required this.contentPadding,
+    @required this.style,
+    this.priceFormatter,
+    this.priceLabelBackgroundColor,
+    this.maDayList = const [5, 10, 20],
+  }) : super(
+          chartRect: mainRect,
+          maxValue: maxValue,
+          minValue: minValue,
+          topPadding: topPadding,
+          fixedLength: fixedLength,
+        ) {
     mLinePaint = Paint()
       ..isAntiAlias = true
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
+      ..strokeWidth = 1.5
       ..color = lineChartColor;
 
     _contentRect = Rect.fromLTRB(
-        chartRect.left,
-        chartRect.top + _contentPadding,
-        chartRect.right,
-        chartRect.bottom - _contentPadding);
+      chartRect.left,
+      chartRect.top + contentPadding,
+      chartRect.right,
+      chartRect.bottom - contentPadding,
+    );
+
     if (maxValue == minValue) {
       maxValue *= 1.5;
       minValue /= 2;
     }
+
     scaleY = _contentRect.height / (maxValue - minValue);
   }
 
@@ -195,8 +203,10 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
     var low = getY(curPoint.low);
     var open = getY(curPoint.open);
     var close = getY(curPoint.close);
-    double r = mCandleWidth / 2;
-    double lineR = mCandleLineWidth / 2;
+
+    double r = style.candleWidth / 2;
+    double lineR = style.candleLineWidth / 2;
+
     if (open > close) {
       chartPaint.color = ChartColors.upColor;
       canvas.drawRect(
@@ -204,7 +214,7 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
       canvas.drawRect(
           Rect.fromLTRB(curX - lineR, high, curX + lineR, low), chartPaint);
     } else if (close > open) {
-      chartPaint.color = ChartColors.dnColor;
+      chartPaint.color = ChartColors.downColor;
       canvas.drawRect(
           Rect.fromLTRB(curX - r, open, curX + r, close), chartPaint);
       canvas.drawRect(
@@ -225,33 +235,50 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
     double rowSpace = chartRect.height / gridRows;
     for (var i = 0; i <= gridRows; ++i) {
       double value = (gridRows - i) * rowSpace / scaleY + minValue;
-      TextSpan span = TextSpan(text: "${format(value)}", style: textStyle);
-      TextPainter tp =
-          TextPainter(text: span, textDirection: TextDirection.ltr);
+      TextStyle style = textStyle;
+
+      if (priceLabelBackgroundColor != null) {
+        style = style.copyWith(
+          backgroundColor: priceLabelBackgroundColor,
+        );
+      }
+
+      final span = TextSpan(text: "${format(value)}", style: style);
+      final tp = TextPainter(text: span, textDirection: TextDirection.ltr);
+
       tp.layout();
       if (i == 0) {
         tp.paint(canvas, Offset(chartRect.width - tp.width, topPadding));
       } else {
         tp.paint(
-            canvas,
-            Offset(chartRect.width - tp.width,
-                rowSpace * i - tp.height + topPadding));
+          canvas,
+          Offset(
+            chartRect.width - tp.width,
+            rowSpace * i - tp.height + topPadding,
+          ),
+        );
       }
     }
   }
 
   @override
   void drawGrid(Canvas canvas, int gridRows, int gridColumns) {
-//    final int gridRows = 4, gridColumns = 4;
     double rowSpace = chartRect.height / gridRows;
     for (int i = 0; i <= gridRows; i++) {
-      canvas.drawLine(Offset(0, rowSpace * i + topPadding),
-          Offset(chartRect.width, rowSpace * i + topPadding), gridPaint);
+      canvas.drawLine(
+        Offset(0, rowSpace * i + topPadding),
+        Offset(chartRect.width, rowSpace * i + topPadding),
+        gridPaint,
+      );
     }
+
     double columnSpace = chartRect.width / gridColumns;
     for (int i = 0; i <= columnSpace; i++) {
-      canvas.drawLine(Offset(columnSpace * i, topPadding),
-          Offset(columnSpace * i, chartRect.bottom), gridPaint);
+      canvas.drawLine(
+        Offset(columnSpace * i, topPadding),
+        Offset(columnSpace * i, chartRect.bottom),
+        gridPaint,
+      );
     }
   }
 

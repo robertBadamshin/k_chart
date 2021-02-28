@@ -6,8 +6,8 @@ class ChartColors {
   static const Color ma5Color = Color(0xffC9B885);
   static const Color ma10Color = Color(0xff6CB0A6);
   static const Color ma30Color = Color(0xff9979C6);
-  static const Color upColor = Color(0xff4DAA90);
-  static const Color dnColor = Color(0xffC15466);
+  static const Color upColor = Color(0xff76C42D);
+  static const Color downColor = Color(0xffFD4762);
   static const Color volColor = Color(0xff4729AE);
 
   static const Color macdColor = Color(0xff4729AE);
@@ -21,14 +21,11 @@ class ChartColors {
 
   static const Color defaultTextColor = Color(0xff60738E);
 
-  //深度颜色
   static const Color depthBuyColor = Color(0xff60A893);
   static const Color depthSellColor = Color(0xffC15866);
-  //选中后显示值边框颜色
-  static const Color selectBorderColor = Color(0xff6C7A86);
 
-  //选中后显示值背景的填充颜色
-  static const Color selectFillColor = Color(0xff0D1722);
+  static const Color selectBorderColor = Color(0xff6C7A86);
+  static const Color selectFillColor = Color(0xff131D2B);
 
   static Color getMAColor(int index) {
     Color maColor = ma5Color;
@@ -48,26 +45,57 @@ class ChartColors {
 }
 
 class ChartStyle {
-  ChartStyle._();
+  const ChartStyle({
+    this.pointWidth,
+    this.candleWidth,
+    this.candleLineWidth,
+    this.volumeWidth,
+    this.macdWidth,
+    this.vCrossLineWidth,
+    this.hCrossLineWidth,
+  })  : assert(pointWidth != null),
+        assert(candleWidth != null),
+        assert(candleLineWidth != null),
+        assert(volumeWidth != null),
+        assert(macdWidth != null),
+        assert(vCrossLineWidth != null),
+        assert(hCrossLineWidth != null);
 
-  //点与点的距离
-  static const double pointWidth = 11.0;
+  final double pointWidth;
+  final double candleWidth;
+  final double candleLineWidth;
+  final double volumeWidth;
+  final double macdWidth;
+  final double vCrossLineWidth;
+  final double hCrossLineWidth;
 
-  //蜡烛宽度
-  static const double candleWidth = 8.5;
+  static const defaultStyle = ChartStyle(
+    pointWidth: 20,
+    candleWidth: 12.5,
+    candleLineWidth: 1.5,
+    volumeWidth: 8.5,
+    macdWidth: 3,
+    vCrossLineWidth: 8.5,
+    hCrossLineWidth: 0.5,
+  );
 
-  //蜡烛中间线的宽度
-  static const double candleLineWidth = 1.5;
-
-  //vol柱子宽度
-  static const double volWidth = 8.5;
-
-  //macd柱子宽度
-  static const double macdWidth = 3.0;
-
-  //垂直交叉线宽度
-  static const double vCrossWidth = 8.5;
-
-  //水平交叉线宽度
-  static const double hCrossWidth = 0.5;
+  ChartStyle copyWith({
+    double pointWidth,
+    double candleWidth,
+    double candleLineWidth,
+    double volumeWidth,
+    double macdWidth,
+    double vCrossLineWidth,
+    double hCrossLineWidth,
+  }) {
+    return ChartStyle(
+      pointWidth: pointWidth ?? this.pointWidth,
+      candleWidth: candleWidth ?? this.candleWidth,
+      candleLineWidth: candleLineWidth ?? this.candleLineWidth,
+      volumeWidth: volumeWidth ?? this.volumeWidth,
+      macdWidth: macdWidth ?? this.macdWidth,
+      vCrossLineWidth: vCrossLineWidth ?? this.vCrossLineWidth,
+      hCrossLineWidth: hCrossLineWidth ?? this.hCrossLineWidth,
+    );
+  }
 }

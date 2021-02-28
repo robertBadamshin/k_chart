@@ -7,23 +7,28 @@ abstract class BaseChartRenderer<T> {
   double topPadding;
   Rect chartRect;
   int fixedLength;
+  String Function(double) priceFormatter;
+
   Paint chartPaint = Paint()
     ..isAntiAlias = true
     ..filterQuality = FilterQuality.high
     ..strokeWidth = 1.0
     ..color = Colors.red;
+
   Paint gridPaint = Paint()
     ..isAntiAlias = true
     ..filterQuality = FilterQuality.high
     ..strokeWidth = 0.5
-    ..color = Color(0xff4c5c74);
+    ..color = Colors.grey.withAlpha(90);
 
-  BaseChartRenderer(
-      {@required this.chartRect,
-      @required this.maxValue,
-      @required this.minValue,
-      @required this.topPadding,
-      @required this.fixedLength}) {
+  BaseChartRenderer({
+    @required this.chartRect,
+    @required this.maxValue,
+    @required this.minValue,
+    @required this.topPadding,
+    @required this.fixedLength,
+    this.priceFormatter,
+  }) {
     if (maxValue == minValue) {
       maxValue *= 1.5;
       minValue /= 2;
@@ -37,6 +42,8 @@ abstract class BaseChartRenderer<T> {
   String format(double n) {
     if (n == null || n.isNaN) {
       return "0.00";
+    } else if (priceFormatter != null) {
+      return priceFormatter(n);
     } else {
       return n.toStringAsFixed(fixedLength);
     }
